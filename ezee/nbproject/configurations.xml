@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>crypt.h</itemPath>
       <itemPath>ez-pe-loader.h</itemPath>
       <itemPath>ezee.h</itemPath>
     </logicalFolder>
@@ -14,6 +15,7 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <itemPath>crypt.c</itemPath>
       <itemPath>ez-pe-loader.c</itemPath>
       <itemPath>main.c</itemPath>
     </logicalFolder>
@@ -39,6 +41,10 @@
       </toolsSet>
       <compileType>
       </compileType>
+      <item path="crypt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="crypt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="ez-pe-loader.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="ez-pe-loader.h" ex="false" tool="3" flavor2="0">
@@ -68,6 +74,10 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="crypt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="crypt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="ez-pe-loader.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="ez-pe-loader.h" ex="false" tool="3" flavor2="0">

@@ -32,6 +32,9 @@ int main(int argc, char** argv) {
         printf(target->load_error);
     }
     
+    apply_crypt(target);
+    
+    save_file(target, argv[1]);
     release_file(target);
     return (EXIT_SUCCESS);
 }
