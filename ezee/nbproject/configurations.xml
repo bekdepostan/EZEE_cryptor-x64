@@ -5,8 +5,9 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>crypt.h</itemPath>
-      <itemPath>ez-pe-loader.h</itemPath>
       <itemPath>ezee.h</itemPath>
+      <itemPath>loader.h</itemPath>
+      <itemPath>utl.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -16,8 +17,9 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>crypt.c</itemPath>
-      <itemPath>ez-pe-loader.c</itemPath>
+      <itemPath>loader.c</itemPath>
       <itemPath>main.c</itemPath>
+      <itemPath>utl.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -40,18 +42,25 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <standard>3</standard>
+        </cTool>
       </compileType>
       <item path="crypt.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="crypt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="ez-pe-loader.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="ez-pe-loader.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="ezee.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="loader.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="loader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utl.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -78,13 +87,17 @@
       </item>
       <item path="crypt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="ez-pe-loader.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="ez-pe-loader.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="ezee.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="loader.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="loader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utl.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

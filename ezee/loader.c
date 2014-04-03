@@ -37,7 +37,13 @@ _PE load_file(char *filename) {
         pe_file->load_error = "Failed to load file, no valid NT headers found.\n";
         return pe_file;
     }
-
+    
+    if(pe_file->nt_h->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+        pe_file->load_error = "Failed to load file, no valid 64-bit headers found.\n";
+        return pe_file;
+    }
+    
+    pe_file->s_h = IMAGE_FIRST_SECTION(pe_file);
     return pe_file;
 }
 

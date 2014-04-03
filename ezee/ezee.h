@@ -27,10 +27,11 @@ extern "C" {
        uint64_t raw_size;
        PIMAGE_DOS_HEADER dos_h;
        PIMAGE_NT_HEADERS64 nt_h;
+       PIMAGE_SECTION_HEADER s_h;
        char* load_error;
     } *_PE, PE;
     
-    #include "ez-pe-loader.h"
+    #include "loader.h"
 
 #ifdef	__cplusplus
 }

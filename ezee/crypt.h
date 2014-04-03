@@ -12,8 +12,9 @@
 extern "C" {
 #endif
 
-
-
+void apply_crypt(_PE target) {
+    
+}
 
 #ifdef	__cplusplus
 }
