@@ -7,10 +7,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group name="EZEE">
-            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE-cryptor-x64/ezee/ezee.h</file>
-            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE-cryptor-x64/ezee/ez-pe-loader.h</file>
-            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE-cryptor-x64/ezee/main.c</file>
-            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE-cryptor-x64/ezee/ez-pe-loader.c</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/loader.h</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/ep_stub.c</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/utl.c</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/main.c</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/utl.h</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/loader.c</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/crypt.c</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/ep_stub.h</file>
+            <file>file:/C:/Users/Darius/Documents/GitHub/EZEE_cryptor-x64/ezee/ezee.h</file>
         </group>
     </open-files>
 </project-private>

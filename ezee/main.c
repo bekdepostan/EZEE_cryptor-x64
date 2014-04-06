@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     get_args(argc, argv);
     
     if(argc < 1) {
-        printf("Usage: ez executable.exe [-i -d -t] \n"
+        puts("Usage: ez executable.exe [-i -d -t] \n"
                "-i : destroy import address table\n"
                "-d : add anti debug traps\n"
                "-t : add execution time trace traps\n\n");
@@ -30,11 +30,13 @@ int main(int argc, char** argv) {
     _PE target = load_file(argv[1]);
     if(target->load_error != NULL) {
         printf(target->load_error);
+        return -1;
     }
     
     if(!crush_sections(target)) {
         release_file(target);
-        return;
+        puts("There was a problem combining the section headers of this PE file.\n\n");
+        return -2;
     }
     //apply_crypt(target);
     

@@ -8,6 +8,7 @@ extern "C" {
 _PE load_file(char *filename); 
 void release_file(_PE file);
 char* save_file(_PE towrite, char *filename);
+_PE reload_in_mem(_PE pe_file);
 
 #ifdef	__cplusplus
 }

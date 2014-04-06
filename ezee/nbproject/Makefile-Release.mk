@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/crypt.o \
+	${OBJECTDIR}/ep_stub.o \
 	${OBJECTDIR}/loader.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/utl.o
@@ -69,6 +70,11 @@ ${OBJECTDIR}/crypt.o: crypt.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/crypt.o crypt.c
+
+${OBJECTDIR}/ep_stub.o: ep_stub.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ep_stub.o ep_stub.c
 
 ${OBJECTDIR}/loader.o: loader.c 
 	${MKDIR} -p ${OBJECTDIR}

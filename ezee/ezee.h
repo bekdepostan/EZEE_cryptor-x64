@@ -32,6 +32,8 @@ extern "C" {
     } *_PE, PE;
     
     #include "loader.h"
+    #include "ep_stub.h"
+    #include "utl.h"
 
 #ifdef	__cplusplus
 }

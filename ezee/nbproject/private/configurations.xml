@@ -28,11 +28,12 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}" ""</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" "C:\Users\Darius\Documents\GitHub\EZEE-cryptor-x64\ezee\notepad.exe"</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" "C:\Users\Darius\Documents\GitHub\EZEE-cryptor-x64\ezee\notepad.exe" -i -d -t</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" C:\Users\Darius\Documents\GitHub\EZEE-cryptor-x64\ezee\notepad.exe -i -d -t</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" C:\Users\Darius\Documents\GitHub\notepad.exe -i -d -t</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" "C:\Users\Darius\Documents\GitHub\EZEE-cryptor-x64\ezee\notepad.exe" -i -d -t</runcommand>
+        <runcommand>"${OUTPUT_PATH}" C:\Users\Darius\Documents\GitHub\notepad.exe -i -d -t</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
-        <console-type>1</console-type>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
         <environment>

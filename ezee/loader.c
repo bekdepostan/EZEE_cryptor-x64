@@ -1,6 +1,30 @@
 #include <stdio.h>
 #include "ezee.h"
 
+_PE reload_in_mem(_PE pe_file) {
+    // Validate the format and load DOS header
+    pe_file->dos_h = pe_file->file;
+    if(pe_file->dos_h->e_magic != 0x5A4D) {
+        pe_file->load_error = "Failed to load file, no valid DOS headers found.\n";
+        return pe_file;
+    }
+    
+    // Validate the format and load NT header
+    pe_file->nt_h = pe_file->file + pe_file->dos_h->e_lfanew;
+    if(pe_file->nt_h->Signature != 0x4550) {
+        pe_file->load_error = "Failed to load file, no valid NT headers found.\n";
+        return pe_file;
+    }
+    
+    if(pe_file->nt_h->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+        pe_file->load_error = "Failed to load file, no valid 64-bit headers found.\n";
+        return pe_file;
+    }
+    
+    pe_file->s_h = IMAGE_FIRST_SECTION(pe_file->nt_h);
+    return pe_file;
+}
+
 _PE load_file(char *filename) {
     // Allocate resources
     _PE pe_file = (_PE)malloc(sizeof(PE));
@@ -24,29 +48,8 @@ _PE load_file(char *filename) {
     fread(pe_file->file, pe_file->raw_size, 1, f_handle);
     fclose (f_handle);
     
-    // Validate the format and load DOS header
-    pe_file->dos_h = pe_file->file;
-    if(pe_file->dos_h->e_magic != 0x5A4D) {
-        pe_file->load_error = "Failed to load file, no valid DOS headers found.\n";
-        return pe_file;
-    }
-    
-    // Validate the format and load NT header
-    pe_file->nt_h = pe_file->file + pe_file->dos_h->e_lfanew;
-    if(pe_file->nt_h->Signature != 0x4550) {
-        pe_file->load_error = "Failed to load file, no valid NT headers found.\n";
-        return pe_file;
-    }
-    
-    if(pe_file->nt_h->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
-        pe_file->load_error = "Failed to load file, no valid 64-bit headers found.\n";
-        return pe_file;
-    }
-    
-    pe_file->s_h = IMAGE_FIRST_SECTION(pe_file);
-    return pe_file;
+    return reload_in_mem(pe_file);
 }
-
 
 char* save_file(_PE towrite, char *filename) {
     char* out_append = "_packed.exe";
