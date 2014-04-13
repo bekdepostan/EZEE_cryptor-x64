@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
     long ep_stub();
+    long iat_size();
 
 #ifdef	__cplusplus
 }

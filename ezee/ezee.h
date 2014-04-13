@@ -16,6 +16,10 @@ extern "C" {
     #include <windows.h>
     #include <stdint.h>
 
+    #ifndef _PTR
+    typedef void* _PTR;
+    #endif
+
     enum {
         flag_destroy_iat = 1,
         flag_anti_debug = 10,
@@ -25,6 +29,10 @@ extern "C" {
     typedef struct PE {
        _PTR file;
        uint64_t raw_size;
+       
+       // inject_ptr is empty until crush_sections finishes section size calculations
+       uint64_t inject_ptr_raw; 
+       
        PIMAGE_DOS_HEADER dos_h;
        PIMAGE_NT_HEADERS64 nt_h;
        PIMAGE_SECTION_HEADER s_h;

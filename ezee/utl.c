@@ -12,7 +12,8 @@ long pad_p_to_n(long p, long n) {
 long size_of_lib_ezpak() {
     long dll_size  = 0;
     long stub_size = ep_stub();
-    return dll_size + stub_size;
+    long new_iat_size = iat_size();
+    return dll_size + stub_size + new_iat_size;
 }
 
 boolean crush_sections(_PE target) {
@@ -29,7 +30,9 @@ boolean crush_sections(_PE target) {
     }
     
     section_raw = final_section->SizeOfRawData + final_section->PointerToRawData;
-    //section_raw = pad_p_to_n(final_section->SizeOfRawData + ez_size, 0x200);
+    target->inject_ptr_raw = section_raw;
+    
+    section_raw = pad_p_to_n(final_section->SizeOfRawData + ez_size, 0x200);
     section_raw -= first_section->PointerToRawData;
     
     section_virt = final_section->VirtualAddress + final_section->Misc.VirtualSize;
@@ -49,4 +52,14 @@ boolean crush_sections(_PE target) {
     first_section->Misc.VirtualSize = section_virt;
     memcpy(first_section->Name, ".ezee\0\0\0", 8);
     first_section->SizeOfRawData = section_raw;
+}
+
+// This inserts the extra space we need to inject our loader stub and new import directory
+void gap_insert_image(_PE target) {
+    PIMAGE_SECTION_HEADER ez_section = target->s_h;
+    
+    // NOTE: File size discrepancy means excess data is stored after image.
+    // This is not supported by the packer, we assume its junk debug data or something -- lop it off.
+    target->raw_size = ez_section->PointerToRawData + ez_section->SizeOfRawData;
+    
 }
