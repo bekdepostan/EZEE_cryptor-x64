@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "ezee.h"
 
-long pad_p_to_n(long p, long n) {
+unsigned long pad_p_to_n(long p, long n) {
     long i = 0;
     while(i < p) {
         i += n;
@@ -9,9 +9,20 @@ long pad_p_to_n(long p, long n) {
     return i;
 }
 
-long size_of_lib_ezpak() {
+unsigned long to_RVA(_PE target, _PTR raw) {
+    unsigned long file_offset = (unsigned long)raw - (unsigned long)target->file;
+    
+    // Get distance from beginning of section
+    PIMAGE_SECTION_HEADER first_section = target->s_h;
+    unsigned long section_offset  = file_offset - first_section->PointerToRawData;
+    
+    // Convert to RVA
+    return section_offset + first_section->VirtualAddress;
+}
+
+unsigned long size_of_lib_ezpak() {
     long dll_size  = 0;
-    long stub_size = ep_stub();
+    long stub_size = ep_stub(EP_GET_SIZE);
     long new_iat_size = iat_size();
     return dll_size + stub_size + new_iat_size;
 }
@@ -55,11 +66,30 @@ boolean crush_sections(_PE target) {
 }
 
 // This inserts the extra space we need to inject our loader stub and new import directory
-void gap_insert_image(_PE target) {
+void create_stub_space(_PE target) {
     PIMAGE_SECTION_HEADER ez_section = target->s_h;
     
     // NOTE: File size discrepancy means excess data is stored after image.
     // This is not supported by the packer, we assume its junk debug data or something -- lop it off.
     target->raw_size = ez_section->PointerToRawData + ez_section->SizeOfRawData;
+    target->file = realloc(target->file, target->raw_size);
+    reload_in_mem(target);
+}
+
+void inject_stub(_PE target) {
+    _PTR write_head = target->inject_ptr_raw + target->file;
     
+    // Copy loader stub
+    unsigned long ep_size = ep_stub(EP_GET_SIZE);
+    memcpy(write_head, (_PTR)ep_stub(EP_GET_PTR), ep_size);
+    write_head += ep_size;
+    
+    // Build and copy new IAT
+    memset(write_head, iat_size(), ep_size);
+    build_iat(write_head, to_RVA(target, write_head));
+    write_head += iat_size();
+    
+    // Copy lib-ez DLL
+    
+    // Fixup entrypoint
 }

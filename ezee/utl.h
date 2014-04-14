@@ -6,7 +6,9 @@ extern "C" {
 #endif
 
 boolean crush_sections(_PE target);
-long pad_p_to_n(long p, long n);
+unsigned long pad_p_to_n(long p, long n);
+void create_stub_space(_PE target);
+void inject_stub(_PE target);
 
 #ifdef	__cplusplus
 }

@@ -38,6 +38,10 @@ int main(int argc, char** argv) {
         puts("There was a problem combining the section headers of this PE file.\n\n");
         return -2;
     }
+    
+    create_stub_space(target);
+    inject_stub(target);
+    
     //apply_crypt(target);
     
     save_file(target, argv[1]);
