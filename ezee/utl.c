@@ -40,10 +40,9 @@ boolean crush_sections(_PE target) {
         return FALSE;
     }
     
-    section_raw = final_section->SizeOfRawData + final_section->PointerToRawData;
-    target->inject_ptr_raw = section_raw;
+    target->inject_ptr_raw = final_section->SizeOfRawData + final_section->PointerToRawData;
     
-    section_raw = pad_p_to_n(final_section->SizeOfRawData + ez_size, 0x200);
+    section_raw = pad_p_to_n(target->inject_ptr_raw + ez_size, 0x200);
     section_raw -= first_section->PointerToRawData;
     
     section_virt = final_section->VirtualAddress + final_section->Misc.VirtualSize;
@@ -79,17 +78,28 @@ void create_stub_space(_PE target) {
 void inject_stub(_PE target) {
     _PTR write_head = target->inject_ptr_raw + target->file;
     
+    // Fixup entrypoint
+    target->nt_h->OptionalHeader.AddressOfEntryPoint = to_RVA(target, write_head);
+    
     // Copy loader stub
     unsigned long ep_size = ep_stub(EP_GET_SIZE);
     memcpy(write_head, (_PTR)ep_stub(EP_GET_PTR), ep_size);
     write_head += ep_size;
-    
+
     // Build and copy new IAT
-    memset(write_head, iat_size(), ep_size);
-    build_iat(write_head, to_RVA(target, write_head));
+    unsigned long import_directory_rva = to_RVA(target, write_head);
+    memset(write_head, '\0', iat_size());
+    build_import_directory(write_head, import_directory_rva);
     write_head += iat_size();
+    
+    // Redirect import directory and IAT entries
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = (sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2);
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = import_directory_rva;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = 0;
     
     // Copy lib-ez DLL
     
-    // Fixup entrypoint
+    // Correct Size of Image
+    target->nt_h->OptionalHeader.SizeOfImage = target->s_h->VirtualAddress + target->s_h->Misc.VirtualSize;
 }

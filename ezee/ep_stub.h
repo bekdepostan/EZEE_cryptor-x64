@@ -16,7 +16,7 @@ extern "C" {
     #define EP_GET_PTR 0
     unsigned long ep_stub(int action);
     unsigned long iat_size();
-    void build_iat(_PTR dest_base, unsigned long base_rva);
+    void build_import_directory(_PTR dest_base, unsigned long base_rva);
 
 #ifdef	__cplusplus
 }
