@@ -21,11 +21,11 @@ unsigned long long ep_stub(int action) {
     __asm(".asciz \"VirtualAlloc\"");
     __asm("ez_dat_fin:");
     
-    // save pointer to ez_data
+    // edi is pointer to ez_data - save it
     __asm("push %rdi");
     __asm("movq %rdi, %rcx");
     
-    // RDI will point to LoadLibraryA thunk
+    // rsi will point to thunks
     __asm("movq %rdi, %rsi");
     __asm("addq $stub_fin - begin_ez_dat, %rsi");
     __asm("addq $64, %rsi");
@@ -36,6 +36,11 @@ unsigned long long ep_stub(int action) {
     __asm("movq (%esp), %rdx");
     __asm("addq $13, %rdx");
     __asm("callq *8(%rsi)");
+    
+    // Find and size lib_ez
+    __asm("movq %rdi, %rax");
+    __asm("addq $stub_fin - begin_ez_dat, %rax");
+    __asm("addq $133, %rsi");
     
     // Alloc some memory
     // Todo: new calling conventions
