@@ -9,19 +9,19 @@ CND_DISTDIR=dist
 # Debug configuration
 CND_PLATFORM_Debug=MinGW64-Windows
 CND_ARTIFACT_DIR_Debug=dist/Debug/MinGW64-Windows
-CND_ARTIFACT_NAME_Debug=ezee
-CND_ARTIFACT_PATH_Debug=dist/Debug/MinGW64-Windows/ezee
+CND_ARTIFACT_NAME_Debug=libezpak.dll
+CND_ARTIFACT_PATH_Debug=dist/Debug/MinGW64-Windows/libezpak.dll
 CND_PACKAGE_DIR_Debug=dist/Debug/MinGW64-Windows/package
-CND_PACKAGE_NAME_Debug=ezee.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/MinGW64-Windows/package/ezee.tar
+CND_PACKAGE_NAME_Debug=libezpak.dll.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/MinGW64-Windows/package/libezpak.dll.tar
 # Release configuration
 CND_PLATFORM_Release=MinGW64-Windows
 CND_ARTIFACT_DIR_Release=dist/Release/MinGW64-Windows
-CND_ARTIFACT_NAME_Release=ezee
-CND_ARTIFACT_PATH_Release=dist/Release/MinGW64-Windows/ezee
+CND_ARTIFACT_NAME_Release=libezpak.dll
+CND_ARTIFACT_PATH_Release=dist/Release/MinGW64-Windows/libezpak.dll
 CND_PACKAGE_DIR_Release=dist/Release/MinGW64-Windows/package
-CND_PACKAGE_NAME_Release=ezee.tar
-CND_PACKAGE_PATH_Release=dist/Release/MinGW64-Windows/package/ezee.tar
+CND_PACKAGE_NAME_Release=libezpak.dll.tar
+CND_PACKAGE_PATH_Release=dist/Release/MinGW64-Windows/package/libezpak.dll.tar
 #
 # include compiler specific variables
 #

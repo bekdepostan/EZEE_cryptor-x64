@@ -14,7 +14,7 @@ extern "C" {
 
     #define EP_GET_SIZE 1
     #define EP_GET_PTR 0
-    unsigned long ep_stub(int action);
+    unsigned long long ep_stub(int action);
     unsigned long iat_size();
     void build_import_directory(_PTR dest_base, unsigned long base_rva);
 

@@ -1,22 +1,59 @@
 #include "ezee.h"
 
 // The ep_stub serves to load the lib-ezpak into memory and execute stage 2 functions.
-unsigned long ep_stub(int action) {
+unsigned long long ep_stub(int action) {
+    
+    // This skips the actual stub itself when code injector just wants information about it
     __asm("jmp do_calc");
     ep_stub_begin:
     
-    __asm("jmp over_ez_sig");
-    __asm(".ascii \"EZPK\"");
-    __asm("over_ez_sig:");
-    __asm("jmp *(0x0000000011111111)");
-    __asm("nop");
+    // Relative positioning is a pain in the arse
+    __asm("call get_eip");
+    __asm("get_eip:");
+    __asm("pop %rdi");
+    __asm("addq $7, %rdi");
     
+    // Store data we need to load DLL functions here
+    // This is how we load functions without exposing them in the import directory
+    __asm("jmp ez_dat_fin");
+    __asm("begin_ez_dat:");
+    __asm(".asciz \"Kernel32.dll\"");
+    __asm(".asciz \"VirtualAlloc\"");
+    __asm("ez_dat_fin:");
+    
+    // save pointer to ez_data
+    __asm("push %rdi");
+    __asm("movq %rdi, %rcx");
+    
+    // RDI will point to LoadLibraryA thunk
+    __asm("movq %rdi, %rsi");
+    __asm("addq $stub_fin - begin_ez_dat, %rsi");
+    __asm("addq $64, %rsi");
+    __asm("callq *(%rsi)");
+    
+    // pass VirtualAlloc asciz and module handle for kernel
+    __asm("movq %rax, %rcx");
+    __asm("movq (%esp), %rdx");
+    __asm("addq $13, %rdx");
+    __asm("callq *8(%rsi)");
+    
+    // Alloc some memory
+    // Todo: new calling conventions
+    __asm("push $0");
+    __asm("push $0x5000");
+    __asm("push $0x3000");
+    __asm("push $0x3000");
+    __asm("callq *(%rax)");    
+    
+    __asm("stub_fin:");
+
     ep_stub_end:
+    
     __asm("do_calc:");
     if(action == EP_GET_SIZE) {
         return &&ep_stub_end - &&ep_stub_begin; // calculate size of dll loader stub
     } else {
-        return (unsigned long)&&ep_stub_begin;
+        return (unsigned long long)&&ep_stub_begin;
     }
 }
 
@@ -35,7 +72,7 @@ unsigned long iat_size() {
     return sizeOfId + sizeOfDLLSz + sizeOfImp1Sz + sizeOfImp2Sz;
 }
 
-// Modifying this function will only end in tears: be warned.
+// TODO -- use offsetof and structify this :0
 void build_import_directory(_PTR dest_base, unsigned long base_rva) {
     DWORD image_import_by_names_base = base_rva + (sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2) + (sizeof(IMAGE_THUNK_DATA64) * 6);
     

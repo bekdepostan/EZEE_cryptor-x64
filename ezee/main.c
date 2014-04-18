@@ -33,19 +33,28 @@ int main(int argc, char** argv) {
         return -1;
     }
     
-    if(!crush_sections(target)) {
+    // TODO after testing: not this ;)
+    _PE lib_ez = load_file("C:\\Users\\Darius\\Documents\\GitHub\\EZEE_cryptor-x64\\ezpak\\dist\\Debug\\MinGW64-Windows\\libezpak.dll");
+    if(lib_ez->load_error != NULL) {
+        printf(lib_ez->load_error);
+        return -1;
+    }
+    
+    if(!crush_sections(target, lib_ez)) {
         release_file(target);
         puts("There was a problem combining the section headers of this PE file.\n\n");
         return -2;
     }
     
     create_stub_space(target);
-    inject_stub(target);
+    inject_stub(target, lib_ez);
+    pe_fixup(target);
     
     //apply_crypt(target);
     
     save_file(target, argv[1]);
     release_file(target);
+    release_file(lib_ez);
     return (EXIT_SUCCESS);
 }
 

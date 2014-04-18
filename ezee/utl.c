@@ -10,7 +10,7 @@ unsigned long pad_p_to_n(long p, long n) {
 }
 
 unsigned long to_RVA(_PE target, _PTR raw) {
-    unsigned long file_offset = (unsigned long)raw - (unsigned long)target->file;
+    unsigned long file_offset = (unsigned long long)raw - (unsigned long long)target->file;
     
     // Get distance from beginning of section
     PIMAGE_SECTION_HEADER first_section = target->s_h;
@@ -20,18 +20,18 @@ unsigned long to_RVA(_PE target, _PTR raw) {
     return section_offset + first_section->VirtualAddress;
 }
 
-unsigned long size_of_lib_ezpak() {
-    long dll_size  = 0;
+unsigned long size_of_injected(_PE lib_ez) {
+    long dll_size = lib_ez->raw_size;
     long stub_size = ep_stub(EP_GET_SIZE);
     long new_iat_size = iat_size();
     return dll_size + stub_size + new_iat_size;
 }
 
-boolean crush_sections(_PE target) {
+boolean crush_sections(_PE target, _PE lib_ez) {
     long section_raw = 0;
     long section_virt = 0;
     int section_flags = 0xE40000E0;
-    long ez_size = size_of_lib_ezpak();
+    long ez_size = size_of_injected(lib_ez);
     PIMAGE_SECTION_HEADER first_section = target->s_h;
     PIMAGE_SECTION_HEADER final_section = target->s_h;
     final_section = (void*)final_section + ((target->nt_h->FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER)) - sizeof(IMAGE_SECTION_HEADER));
@@ -75,7 +75,7 @@ void create_stub_space(_PE target) {
     reload_in_mem(target);
 }
 
-void inject_stub(_PE target) {
+void inject_stub(_PE target, _PE lib_ez) {
     _PTR write_head = target->inject_ptr_raw + target->file;
     
     // Fixup entrypoint
@@ -92,14 +92,53 @@ void inject_stub(_PE target) {
     build_import_directory(write_head, import_directory_rva);
     write_head += iat_size();
     
+    // Copy lib-ez DLL
+    memcpy(write_head, lib_ez->file , lib_ez->raw_size);
+    write_head += lib_ez->raw_size;
+    
     // Redirect import directory and IAT entries
     target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = (sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2);
     target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = import_directory_rva;
-    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 0;
-    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = 0;
-    
-    // Copy lib-ez DLL
-    
+}
+
+void pe_fixup(_PE target) {
     // Correct Size of Image
     target->nt_h->OptionalHeader.SizeOfImage = target->s_h->VirtualAddress + target->s_h->Misc.VirtualSize;
+    
+    // SUPER WALL OF UNIMPLEMENTED SHAME :D
+    // No support yet
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress = 0;
+    
+    // Resources are destroyed until runtime - selective resource protection still needs to be implemented
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress = 0;
+    
+    // Don't know what these do yet
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_ARCHITECTURE].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_ARCHITECTURE].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_GLOBALPTR].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_GLOBALPTR].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].VirtualAddress = 0;
+    
+    // Destroy pointer to debug info
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG].Size = 0;
+    target->nt_h->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG].VirtualAddress = 0;
 }
