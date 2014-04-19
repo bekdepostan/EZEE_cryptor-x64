@@ -3,8 +3,8 @@
 // The ep_stub serves to load the lib-ezpak into memory and execute stage 2 functions.
 unsigned long long ep_stub(int action) {
     
-    // This skips the actual stub itself when code injector just wants information about it
-    __asm("jmp do_calc");
+    // This prevents stub from executing during information gathering
+    __asm("jmp stub_fin");
     ep_stub_begin:
     
     // Relative positioning is a pain in the arse
@@ -14,15 +14,12 @@ unsigned long long ep_stub(int action) {
     __asm("addq $7, %rdi");
     
     // Store data we need to load DLL functions here
-    // This is how we load functions without exposing them in the import directory
+    // This is how a person might load functions without exposing them in the import directory
     __asm("jmp ez_dat_fin");
     __asm("begin_ez_dat:");
     __asm(".asciz \"Kernel32.dll\"");
     __asm(".asciz \"VirtualAlloc\"");
     __asm("ez_dat_fin:");
-    
-    // edi is pointer to ez_data - save it
-    __asm("push %rdi");
     __asm("movq %rdi, %rcx");
     
     // rsi will point to thunks
@@ -31,30 +28,87 @@ unsigned long long ep_stub(int action) {
     __asm("addq $64, %rsi");
     __asm("callq *(%rsi)");
     
-    // pass VirtualAlloc asciz and module handle for kernel
+    // pass asciz and module handle to get VirtualAlloc's address
     __asm("movq %rax, %rcx");
-    __asm("movq (%esp), %rdx");
+    __asm("movq %rdi, %rdx");
     __asm("addq $13, %rdx");
     __asm("callq *8(%rsi)");
+    __asm("movq %rax, %rbp");
     
-    // Find and size lib_ez
+    // Find lib_ez
     __asm("movq %rdi, %rax");
     __asm("addq $stub_fin - begin_ez_dat, %rax");
-    __asm("addq $133, %rsi");
     
-    // Alloc some memory
-    // Todo: new calling conventions
-    __asm("push $0");
-    __asm("push $0x5000");
-    __asm("push $0x3000");
-    __asm("push $0x3000");
-    __asm("callq *(%rax)");    
+    // Import directory size is 133, offset to e_lfanew is 60
+    __asm("addq $133, %rax");
+    __asm("mov %rax, %r9");
+    __asm("addq $60, %r9");
+    __asm("xor %rbx, %rbx");
+    __asm("movzwl (%r9), %ebx");
+    __asm("addq %rbx, %rax");
     
+    // Get number of sections and seek last section
+    // Size of nt headers is 264, size of section header is 40
+    __asm("xor %rdx, %rdx");
+    __asm("movzwl 6(%rax), %edx");
+    __asm("push %rax");
+    __asm("movq $40, %rax");
+    __asm("mul %rdx");
+    __asm("movq %rax, %rbx");
+    __asm("pop %rax");
+    __asm("addq %rax, %rbx");
+    __asm("addq $264 - 40, %rbx");
+    
+    // Find file size of lib_ez and alloc memory
+    __asm("xor %rcx, %rcx");
+    __asm("xor %rdx, %rdx");
+    __asm("movl 16(%rbx), %edx");
+    __asm("addl 20(%rbx), %edx");
+    __asm("movq %rdx, %rsi");
+    __asm("movq $0x3000, %r8");
+    __asm("movq $0x40, %r9");
+    __asm("callq %rbp"); 
+    
+    // move DLL to allocated space
+    __asm("movq %rax, %r9");
+    __asm("movq %rdi, %rax");
+    __asm("addq $stub_fin - begin_ez_dat, %rax");
+    __asm("addq $133, %rax");
+    
+    // save ptr to relocated lib_ez --------------------------------------------
+    __asm("push %rax");
+    __asm("copy_more:");
+    __asm("movzbl (%rax), %ebx");
+    __asm("movb %bl, (%r9)");
+    __asm("dec %rsi");
+    __asm("inc %r9");
+    __asm("inc %rax");
+    __asm("cmp $0, %rsi");
+    __asm("jg copy_more");
+    __asm("pop %rax");
+    
+    // apply relocation deltas
+    
+    
+    
+    // resolve import directory
+    
+    
+    // fuck this stupid DLL, it has TLS and an exception dir and shit
+    // I don't know how to deal with that shit
+    
+    
+    // call stage 2 initialization 
+    
+    
+    
+    // if we end up back here the target actually returned to us holy shit.
+    // ... I guess just exit success here???
+    __asm("mov $0, %rax"); 
+    __asm("ret"); 
     __asm("stub_fin:");
-
     ep_stub_end:
     
-    __asm("do_calc:");
     if(action == EP_GET_SIZE) {
         return &&ep_stub_end - &&ep_stub_begin; // calculate size of dll loader stub
     } else {
