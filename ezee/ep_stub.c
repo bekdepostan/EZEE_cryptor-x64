@@ -1,12 +1,16 @@
 #include "ezee.h"
 
+
+// This freaks GCC out but we ignore as we are copying position independent code from a local function
+#pragma GCC diagnostic ignored "-Wreturn-local-addr"
+
 // The ep_stub serves to load the lib-ezpak into memory and execute stage 2 functions.
 unsigned long long ep_stub(int action) {
     
     // This prevents stub from executing during information gathering
     __asm("jmp stub_fin");
     ep_stub_begin:
-    
+
     // Relative positioning is a pain in the arse
     __asm("call get_eip");
     __asm("get_eip:");
@@ -26,56 +30,66 @@ unsigned long long ep_stub(int action) {
     __asm("movq %rdi, %rsi");
     __asm("addq $stub_fin - begin_ez_dat, %rsi");
     __asm("addq $64, %rsi");
+    __asm("subq $0x20, %rsp");
     __asm("callq *(%rsi)");
+    __asm("addq $0x20, %rsp");
     
     // pass asciz and module handle to get VirtualAlloc's address
     __asm("movq %rax, %rcx");
     __asm("movq %rdi, %rdx");
     __asm("addq $13, %rdx");
+    __asm("subq $0x20, %rsp");
     __asm("callq *8(%rsi)");
+    __asm("addq $0x20, %rsp");
     __asm("movq %rax, %rbp");
     
     // Find lib_ez
     __asm("movq %rdi, %rax");
     __asm("addq $stub_fin - begin_ez_dat, %rax");
     
-    // Import directory size is 133, offset to e_lfanew is 60
+    // EZ Import directory size is 133,
     __asm("addq $133, %rax");
-    __asm("mov %rax, %r9");
-    __asm("addq $60, %r9");
-    __asm("xor %rbx, %rbx");
-    __asm("movzwl (%r9), %ebx");
-    __asm("addq %rbx, %rax");
+    __asm("call get_nt_headers");
     
     // Get number of sections and seek last section
     // Size of nt headers is 264, size of section header is 40
-    __asm("xor %rdx, %rdx");
-    __asm("movzwl 6(%rax), %edx");
+    __asm("xor %r13, %r13");
+    __asm("movzwl 6(%rax), %r13d");
     __asm("push %rax");
     __asm("movq $40, %rax");
-    __asm("mul %rdx");
+    __asm("mul %r13");
     __asm("movq %rax, %rbx");
     __asm("pop %rax");
     __asm("addq %rax, %rbx");
     __asm("addq $264 - 40, %rbx");
     
-    // Find file size of lib_ez and alloc memory
+    // Find virtual size of lib_ez and alloc memory
     __asm("xor %rcx, %rcx");
-    __asm("xor %rdx, %rdx");
-    __asm("movl 16(%rbx), %edx");
-    __asm("addl 20(%rbx), %edx");
-    __asm("movq %rdx, %rsi");
+    __asm("xor %r12, %r12");
+    __asm("movl 8(%rbx), %r12d");
+    __asm("addl 12(%rbx), %r12d");
+    __asm("movq %r12, %rdx");
     __asm("movq $0x3000, %r8");
     __asm("movq $0x40, %r9");
-    __asm("callq %rbp"); 
+    __asm("subq $0x20, %rsp");
+    __asm("callq *%rbp"); 
+    __asm("addq $0x20, %rsp");
     
-    // move DLL to allocated space
+    // move DLL headers to allocated space
     __asm("movq %rax, %r9");
     __asm("movq %rdi, %rax");
     __asm("addq $stub_fin - begin_ez_dat, %rax");
     __asm("addq $133, %rax");
+    __asm("xor %rsi, %rsi");
     
-    // save ptr to relocated lib_ez --------------------------------------------
+    // Get size of headers to copy
+    __asm("push %rax");
+    __asm("call get_nt_headers");
+    __asm("movl 84(%rax), %esi");
+    __asm("pop %rax");
+    
+    // save ptr to relocated lib_ez 
+    __asm("push %r9");
     __asm("push %rax");
     __asm("copy_more:");
     __asm("movzbl (%rax), %ebx");
@@ -85,6 +99,44 @@ unsigned long long ep_stub(int action) {
     __asm("inc %rax");
     __asm("cmp $0, %rsi");
     __asm("jg copy_more");
+    __asm("pop %rax");
+    __asm("pop %r9");
+    
+    // copy + align sections 
+    __asm("push %rax");
+    __asm("movq %rax, %r10");
+    __asm("call get_nt_headers");
+    __asm("addq $264, %rax");
+    
+    __asm("align_more:");
+    __asm("xor %rcx, %rcx");
+    __asm("xor %r12, %r12");
+    __asm("xor %rdx, %rdx");
+    
+    __asm("movl 16(%rax), %ecx");
+    __asm("cmp $0, %rcx");
+    __asm("jz bss");
+    
+    __asm("movl 20(%rax), %r12d");
+    __asm("addq (%esp), %r12"); 
+    __asm("movl 12(%rax), %edx");
+    __asm("addq %r9, %rdx");    
+    
+    __asm("move_more_sdata:");
+    __asm("movzbl (%r12), %ebx");
+    __asm("movb %bl, (%rdx)");
+    __asm("dec %rcx"); 
+    __asm("inc %r12"); 
+    __asm("inc %rdx"); 
+    __asm("cmp $0, %rcx");
+    __asm("jg move_more_sdata");
+    
+    __asm("bss:");
+    __asm("addq $40, %rax");
+    __asm("dec %r13");
+    __asm("cmp $0, %r13");
+    __asm("jg align_more");
+    
     __asm("pop %rax");
     
     // apply relocation deltas
@@ -99,13 +151,29 @@ unsigned long long ep_stub(int action) {
     
     
     // call stage 2 initialization 
-    
+    //(DLLMAIN?)
     
     
     // if we end up back here the target actually returned to us holy shit.
     // ... I guess just exit success here???
     __asm("mov $0, %rax"); 
     __asm("ret"); 
+    
+    // Utility functions
+    
+    __asm ("get_nt_headers:");
+    // offset to e_lfanew is 60
+    __asm("push %r9");
+    __asm("push %rbx");
+    __asm("mov %rax, %r9");
+    __asm("addq $60, %r9");
+    __asm("xor %rbx, %rbx");
+    __asm("movzwl (%r9), %ebx");
+    __asm("addq %rbx, %rax");
+    __asm("pop %rbx");
+    __asm("pop %r9");
+    __asm("ret");
+    
     __asm("stub_fin:");
     ep_stub_end:
     

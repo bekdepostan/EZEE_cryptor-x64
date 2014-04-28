@@ -2,7 +2,8 @@ EZEE cryptor x64
 ================
 
 EZEE cryptor is a hobbyist executable protection system. Emphasis on exploration into PE32+ file format. Demonstrates one method of code injection into a compiled binary. 
-**Explanatory tutorial series coming soon!
+
+*Explanatory tutorial series coming soon!
 
 Notable Features:
 

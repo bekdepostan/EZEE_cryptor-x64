@@ -5,7 +5,7 @@
     extern "C" {
     #endif
 
-    void __stdcall __declspec(dllexport) ez_main();
+    void __stdcall __declspec(dllexport) ez_main(void* caller_memory);
 
     #ifdef __cplusplus
     }
